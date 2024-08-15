@@ -1,0 +1,60 @@
+[package]
+name = "booru-dl"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80"
+authors = ["Sean Wang <126865849+WSH032@users.noreply.github.com>"]
+description = "A command line tool to download images and tags txt from boorus"
+readme = "README.md"
+repository = "https://github.com/WSH032/booru-dl/"
+license = "Apache-2.0"
+keywords = ["booru", "downloader", "api"]
+categories = [
+    "api-bindings",
+    "asynchronous",
+    "command-line-utilities",
+    "web-programming",
+]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+# NOTE: version constraints
+# https://iscinumpy.dev/post/bound-version-constraints/
+[dependencies]
+reqwest = { version = "0.12", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1" }
+toml = { version = "0.8" }
+validator = { version = "0.18", features = ["derive"] }
+
+thiserror = { version = "1" }
+anyhow = { version = "1" }
+
+rayon = { version = "1" }
+tokio-rayon = { version = "2" }
+
+digest = { version = "0.10" }
+md-5 = { version = "0.10" }
+base16ct = { version = "0.2", features = ["alloc"] }
+
+indicatif = { version = "0.17" }
+dialoguer = { version = "0.11" }
+clap = { version = "4", features = ["derive", "cargo"] }
+
+
+[dev-dependencies]
+tempfile = { version = "3" }
+
+
+[lints.rust]
+# # https://github.com/rust-lang/rust-clippy/issues/5196
+# warnings = "deny"
+
+
+[profile.release]
+# # https://github.com/johnthagen/min-sized-rust
+# strip = true
+lto = "thin"
+codegen-units = 1
