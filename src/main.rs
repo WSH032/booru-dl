@@ -7,7 +7,7 @@ use reqwest::Client;
 use tokio::runtime::Runtime;
 use tokio::signal;
 
-use booru_dl::api::data::BatchGetter;
+use booru_dl::api::BatchGetter;
 use booru_dl::cli::{Cli, CommandFactory, Parser};
 use booru_dl::config::Config;
 use booru_dl::scheduler::Scheduler;

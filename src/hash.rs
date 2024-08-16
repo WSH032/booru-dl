@@ -1,3 +1,9 @@
+//! Utils for hashing files using various digest algorithms.
+//!
+//! Usually, you don't need to use this module directly.
+//! [`crate::scheduler`] will automatically hash the files
+//! to check if the file is already downloaded.
+
 use std::cmp::min;
 use std::path::Path;
 
@@ -6,6 +12,39 @@ use tokio::io::AsyncReadExt;
 
 const DEFAULT_BUF_SIZE: usize = 2 * 1024 * 1024; // 2MB
 
+/** Hash a file using the specified digest algorithm.
+
+# Example
+
+```rust
+use std::io::Write;
+
+use booru_dl::hash::hash_file;
+
+type Md5Hasher = md5::Md5;
+
+#[tokio::main]
+async fn main() {
+    // We create a temporary file to demonstrate
+    let mut file = tempfile::NamedTempFile::new().unwrap();
+    file.write_all(b"The quick brown fox jumps over the lazy dog")
+        .unwrap();
+    file.flush()
+        .unwrap();
+
+    let hash = hash_file::<Md5Hasher>(file.path()).await.unwrap();
+    // see: https://en.wikipedia.org/wiki/MD5#MD5_hashes
+    assert_eq!(hash, "9e107d9d372bb6826bd81d3542a419d6");
+
+    // clean up the temporary file
+    file.close().unwrap();
+}
+```
+
+# Errors
+
+I/O error when reading the file.
+*/
 pub async fn hash_file<D: Digest + std::marker::Send + 'static>(
     filepath: impl AsRef<Path>,
 ) -> std::io::Result<String> {

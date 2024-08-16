@@ -1,11 +1,19 @@
+//! Some useful tools for the project.
+//!
+//! Usually, you don't need to use this module directly.
+//! [`crate::scheduler`] will automatically use these tools.
+
 use std::ffi::OsString;
 use std::num::NonZeroUsize;
 use std::sync::LazyLock;
 use std::thread::available_parallelism;
 
+/// The number of CPUs available to the program.
+/// You can consider this as cache of [`std::thread::available_parallelism`].
 pub static NUM_CPUS: LazyLock<NonZeroUsize> =
     LazyLock::new(|| available_parallelism().unwrap_or(NonZeroUsize::new(1).unwrap()));
 
+/// Modify the file stem of the path.
 pub(crate) trait SetFileStem {
     fn set_file_stem(&mut self, stem: impl Into<OsString>);
 }

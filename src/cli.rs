@@ -1,3 +1,7 @@
+//! A core module for command line interface.
+//!
+//! See [`Cli`] for more information.
+
 use std::path::PathBuf;
 
 use clap::builder::{PathBufValueParser, TypedValueParser};
@@ -10,12 +14,29 @@ use crate::config::{Config, Validate, DEFAULT_CONFIG_STR};
 
 const EDITOR_EXTENSION: &str = ".toml";
 
+/// [`clap`] command line interface.
+///
+/// The [`Self::parse`] trait and [`Self::get_config_from_editor`]
+/// will use [`toml`] to parse the config file,
+/// then use [`Config::validate`] to validate the config.
+///
+/// You need check out the [`Self`] source code to figure out what [`Self`] do when parsing the config.
+///
+/// # Example
+///
+/// ```no_run
+/// use booru_dl::cli::{Cli, Parser as _};
+///
+/// let cli = Cli::parse();
+/// ```
 #[non_exhaustive]
 #[derive(Parser)]
 #[command(version, about)]
 pub struct Cli {
     /// The config file to use.
-    /// if `None`, will automatically open an editor to create one temporarily.
+    ///
+    /// If `None`, you can use [`Self::get_config_from_editor`]
+    /// to open an editor to ask the user to write a temp config file.
     #[arg(value_name = "PATH")]
     #[arg(value_parser = PathBufValueParser::new().try_map(Self::parse_config_from_filepath))]
     pub config: Option<Config>,
@@ -30,7 +51,22 @@ impl Cli {
         Ok(config)
     }
 
-    /// We open an editor to ask the user to write a config file.
+    /// Open an editor to ask the user to write a config file.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use booru_dl::cli::{Cli, CommandFactory as _};
+    ///
+    /// let config = Cli::get_config_from_editor(&mut Cli::command())?;
+    ///
+    /// Ok::<(), clap::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// If the editor fails to write, or the content is empty, or the content is invalid,
+    /// it will return an error.
     pub fn get_config_from_editor(cmd: &mut Command) -> Result<Config, clap::Error> {
         let config: Option<String> = match Editor::new()
             .extension(EDITOR_EXTENSION)

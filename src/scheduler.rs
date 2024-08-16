@@ -1,3 +1,12 @@
+//! A core module to download images from the API data.
+//!
+//! See [`Scheduler`] for more information.
+//!
+//! Following is the low-level module wrapped by this module:
+//! - [`crate::download`]
+//! - [`crate::hash`]
+//! - [`crate::tool`]
+
 use std::future::Future;
 use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
@@ -20,19 +29,59 @@ type ApiPostData = Vec<Post>;
 
 const PB_FINISH_MODE: ProgressFinish = ProgressFinish::Abandon;
 const PB_TICK_SECS: u64 = 1;
+/// The time interval for updating the download speed.
 const SPEED_UPDATE_SECS: u64 = 1;
 
+/// The result of a single download task.
 enum SingleDownloadResult {
+    /// The file was downloaded successfully.
     Done,
+    /// The file already existed.
     Existed,
 }
 
+/// current download number status
 struct DownloadStatus {
+    /// the number of files that have been downloaded successfully
     done: u64,
+    // the number of files that already,which means no need to download
     existed: u64,
+    // the number of files that failed to download
     failed: u64,
 }
 
+/** The scheduler to download images from the API data.
+
+- This struct will wrap a [`Downloader`] to download images from the `api_post_data` API data to the `download_dir`.
+    Also, it will write the [`tags`] to a tag file with the same name as the image file.
+
+    *If the file already exists, the download and tag writing will be skipped.*
+
+- The number of concurrent downloads will be limited to the number of CPUs available.
+
+- A process bar will be displayed to show the download status and speed when downloading images.
+
+[`tags`]: crate::api::data::field::Post::tags
+
+# Example
+```no_run
+use reqwest::Client;
+use std::path::PathBuf;
+use booru_dl::api::BatchGetter;
+use booru_dl::scheduler::Scheduler;
+
+#[tokio::main]
+async fn main() {
+    let client = Client::new();
+
+    let getter = BatchGetter::build(&client, "cat", 10).unwrap();
+    let api_post_data = getter.run().await.expect("Failed to get data from API");
+
+    let scheduler = Scheduler::build(client, "download_dir", api_post_data).await.unwrap();
+    scheduler.launch().await;
+}
+```
+*/
 pub struct Scheduler {
     downloader: Downloader,
     // TODO, XXX: remove the duplicated `download_dir` field,
@@ -42,6 +91,13 @@ pub struct Scheduler {
 }
 
 impl Scheduler {
+    /// Create a new scheduler.
+    ///
+    /// Usually, you prefer to use [`crate::api`] to get the `api_post_data`.
+    ///
+    /// # Errors
+    ///
+    /// If the `download_dir` cannot be created, an error will be returned.
     pub async fn build(
         client: Client,
         download_dir: impl Into<PathBuf>,
@@ -58,7 +114,10 @@ impl Scheduler {
         })
     }
 
-    /// consume max to 2MB memory when hashing file
+    /// Check if the file already exists by comparing the MD5 hash.
+    /// If the file does not exist, return `false`.
+    ///
+    /// Consume max to 2MB memory when hashing file.
     #[inline]
     async fn check_file_existed(
         filepath: impl AsRef<Path>,
@@ -78,7 +137,7 @@ impl Scheduler {
             })
     }
 
-    /// download status message
+    /// Return the formated download status message
     #[inline]
     fn pb_msg(status: &DownloadStatus) -> String {
         let DownloadStatus {
@@ -89,12 +148,13 @@ impl Scheduler {
         format!("[done:{done}\texisted:{existed}\tfailed:{failed}]")
     }
 
-    /// speed in bytes
+    /// Return the formated speed status message in bytes
     #[inline]
     fn pb_prefix(speed: u64) -> String {
         format!("[{}/S]", indicatif::HumanBytes(speed))
     }
 
+    /// Build a process bar with a specific length and custom style.
     #[inline]
     fn build_process_bar(len: u64) -> ProgressBar {
         // see: https://docs.rs/indicatif/latest/indicatif/#templates
@@ -117,6 +177,14 @@ impl Scheduler {
             .with_finish(PB_FINISH_MODE)
     }
 
+    /// Download a single file.
+    ///
+    /// - `semaphore`: limit the number of concurrent downloads.
+    /// - `filepath`: the path to save the file.
+    /// - `md5`: the MD5 hash to compare for checking if the file already exists.
+    /// - `tags`: the tags to write to the tag file.
+    /// - `download_future`: the future to download the file,
+    ///     created by [`crate::download::DownloadFutureBuilder::build`].
     #[inline]
     async fn single_download(
         semaphore: Arc<Semaphore>,
@@ -160,7 +228,10 @@ impl Scheduler {
         Ok(SingleDownloadResult::Done)
     }
 
-    /// loop forever, until process bar was dropped
+    /// Update the download speed prefix of `process_bar` every `SPEED_UPDATE_SECS` seconds forever,
+    /// until `process_bar` bar was dropped.
+    ///
+    /// The `speed_cursor` will be swapped(Ordering::Acquire) to 0 after each update.
     #[inline]
     async fn update_speed(process_bar: WeakProgressBar, speed_cursor: Arc<AtomicUsize>) {
         const ORDER: Ordering = Ordering::Acquire;
@@ -201,7 +272,11 @@ impl Scheduler {
         }
     }
 
-    /// finish after join set was finished
+    /// Update the download status message of `process_bar` until all tasks of `download_join_set` are completed.
+    ///
+    /// # Panics
+    ///
+    /// If a task panic, the panic will be resumed when `join` the task.
     #[inline]
     async fn update_status(
         process_bar: ProgressBar,
@@ -246,6 +321,14 @@ impl Scheduler {
         process_bar.finish();
     }
 
+    /// Launch the scheduler and download all images from api data to the download directory.
+    /// A process bar will be displayed to show the download status adn speed.
+    ///
+    /// # Panics
+    ///
+    /// If one of the download tasks panic, the panic will be resumed when `join` the task.
+    ///
+    /// Usually, this will **not happen**. If you encounter this situation, please report it as a bug.
     pub async fn launch(self) {
         let Self {
             downloader,
