@@ -20,8 +20,23 @@ categories = [
 
 # NOTE: version constraints
 # https://iscinumpy.dev/post/bound-version-constraints/
+
+[dependencies.reqwest]
+version = "0.12"
+default-features = false
+# we enable all default features except for the `default-tls` feature,
+# which is enabled by `self` crate default feature.
+# All the default features see: <https://docs.rs/crate/reqwest/latest/features>
+features = [
+    # default features 👇
+    "charset",
+    "http2",
+    "macos-system-configuration",
+    # default features 👆
+    "json",
+]
+
 [dependencies]
-reqwest = { version = "0.12", features = ["json"] }
 tokio = { version = "1", features = ["full"] }
 
 serde = { version = "1", features = ["derive"] }
@@ -46,6 +61,23 @@ clap = { version = "4", features = ["derive", "cargo"] }
 
 [dev-dependencies]
 tempfile = { version = "3" }
+
+
+[features]
+# We must enable at least one tls feature,
+# or we will get an error because we use https to visit the booru.
+default = ["reqwest/default-tls"]
+
+# See: https://docs.rs/reqwest/latest/reqwest/#optional-features
+
+native-tls = ["reqwest/native-tls"]
+native-tls-vendored = ["reqwest/native-tls-vendored"]
+native-tls-alpn = ["reqwest/native-tls-alpn"]
+
+rustls-tls = ["reqwest/rustls-tls"]
+rustls-tls-manual-roots = ["reqwest/rustls-tls-manual-roots"]
+rustls-tls-webpki-roots = ["reqwest/rustls-tls-webpki-roots"]
+rustls-tls-native-roots = ["reqwest/rustls-tls-native-roots"]
 
 
 [lints.rust]
