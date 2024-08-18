@@ -76,6 +76,7 @@ booru-dl = { path = ".", default-features = false, features = ["__toml"] }
 default = ["default-tls"]
 
 # See: https://docs.rs/reqwest/latest/reqwest/#optional-features
+# NOTE: keep following `tls` features in sync with cfg `compile_error` in `lib.rs`
 
 default-tls = ["reqwest/default-tls"]
 

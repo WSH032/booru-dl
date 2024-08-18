@@ -56,6 +56,19 @@
 //! [`rustls-tls`]: https://github.com/rustls/rustls
 //! [`native-tls-vendored`]: https://docs.rs/openssl/0.10/openssl/#vendored
 
+#[cfg(not(any(
+    feature = "default-tls",
+    feature = "native-tls",
+    feature = "native-tls-vendored",
+    feature = "native-tls-alpn",
+    feature = "rustls-tls",
+    feature = "rustls-tls-manual-roots",
+    feature = "rustls-tls-webpki-roots",
+    feature = "rustls-tls-native-roots",
+)))]
+// `tls` required for `https` api
+compile_error!("At least one `tls` feature must be enabled");
+
 pub mod api;
 #[cfg(feature = "cli")]
 pub mod cli;
