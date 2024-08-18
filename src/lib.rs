@@ -1,4 +1,10 @@
 #![warn(missing_docs)]
+// See: <https://doc.rust-lang.org/rustdoc/unstable-features.html#extensions-to-the-doc-attribute>
+#![cfg_attr(
+    docsrs,
+    feature(doc_cfg, doc_auto_cfg, doc_cfg_hide),
+    doc(cfg_hide(doc))
+)]
 
 //! # Usage
 //!
@@ -16,12 +22,6 @@
 //! See [`scheduler::Scheduler#example`] for example.
 //!
 //! ## As a binary
-//!
-//! <div class="warning">
-//!
-//! Note: The [`cli`] may become optional feature in the future.
-//!
-//! </div>
 //!
 //! In addition to the above, you also need [`cli`] to build the command line.
 //!
@@ -42,9 +42,11 @@
 //!
 //! # Feature flags
 //!
-//! This crate re-exports(*same name*) all `tls` features from `reqwest`.
+//! - This crate re-exports(*same name*) all `tls` features from `reqwest`.
 //!
-//! See [reqwest#optional-features] for details.
+//!     See [reqwest#optional-features] for details.
+//!
+//! - `cli`: Enable the command line utility.
 //!
 //! [tls]: https://en.wikipedia.org/wiki/Transport_Layer_Security
 //! [`reqwest/default-tls`]: https://docs.rs/reqwest/0.12/reqwest/tls/index.html#default-tls
@@ -55,6 +57,7 @@
 //! [`native-tls-vendored`]: https://docs.rs/openssl/0.10/openssl/#vendored
 
 pub mod api;
+#[cfg(feature = "cli")]
 pub mod cli;
 pub mod scheduler;
 

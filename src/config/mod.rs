@@ -5,7 +5,7 @@
 //! will handle the config for you.
 //!
 //! See [`Config`] for more information.
-#[cfg(doc)]
+#[cfg(all(doc, feature = "cli"))]
 // we only need these for documentation, or the link will be too long.
 use crate::cli::{Cli, Parser};
 

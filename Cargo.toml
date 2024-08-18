@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 rust-version = "1.80"
 authors = ["Sean Wang <126865849+WSH032@users.noreply.github.com>"]
-description = "A command line tool to download images and tags txt from boorus"
+description = "A command line tool to download images and tags txt from booru"
 readme = "README.md"
 repository = "https://github.com/WSH032/booru-dl/"
 license = "Apache-2.0"
@@ -41,7 +41,6 @@ tokio = { version = "1", features = ["full"] }
 
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1" }
-toml = { version = "0.8" }
 validator = { version = "0.18", features = ["derive"] }
 
 thiserror = { version = "1" }
@@ -54,21 +53,31 @@ digest = { version = "0.10" }
 md-5 = { version = "0.10" }
 base16ct = { version = "0.2", features = ["alloc"] }
 
-indicatif = { version = "0.17" }
-dialoguer = { version = "0.11" }
-clap = { version = "4", features = ["derive", "cargo"] }
+# cli features 👇
 
+# TODO: We have temporarily made `indicatif` required,
+# but we may change it to optional in the future.
+indicatif = { version = "0.17" }
+dialoguer = { version = "0.11", optional = true }
+clap = { version = "4", optional = true, features = ["derive", "cargo"] }
+toml = { version = "0.8", optional = true }
+# cli features 👆
 
 [dev-dependencies]
 tempfile = { version = "3" }
+# HACK: This a hack, see: https://github.com/rust-lang/cargo/issues/2911#issuecomment-749580481
+# also: https://github.com/rust-lang/cargo/issues/9518#issuecomment-1021425348
+booru-dl = { path = ".", default-features = false, features = ["__toml"] }
 
 
 [features]
 # We must enable at least one tls feature,
 # or we will get an error because we use https to visit the booru.
-default = ["reqwest/default-tls"]
+default = ["default-tls"]
 
 # See: https://docs.rs/reqwest/latest/reqwest/#optional-features
+
+default-tls = ["reqwest/default-tls"]
 
 native-tls = ["reqwest/native-tls"]
 native-tls-vendored = ["reqwest/native-tls-vendored"]
@@ -78,6 +87,18 @@ rustls-tls = ["reqwest/rustls-tls"]
 rustls-tls-manual-roots = ["reqwest/rustls-tls-manual-roots"]
 rustls-tls-webpki-roots = ["reqwest/rustls-tls-webpki-roots"]
 rustls-tls-native-roots = ["reqwest/rustls-tls-native-roots"]
+
+# we use this private feature to enable some `dev-dependencies`
+# `__` prefix see: https://github.com/rust-lang/cargo/issues/10882
+__toml = ["dep:toml"]
+
+cli = ["dep:clap", "__toml", "dep:dialoguer"]
+
+
+[[bin]]
+name = "booru-dl"
+path = "src/main.rs"
+required-features = ["cli"]
 
 
 [lints.rust]
