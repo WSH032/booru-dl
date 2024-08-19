@@ -32,10 +32,14 @@ See: [docs.rs](https://docs.rs/booru-dl#requirements)
 
 **IMPORTANT: `cli` feature is required for this command line program.**
 
-See [docs.rs](https://docs.rs/booru-dl#feature-flags) for more feature.
-
 ```bash
 cargo install booru-dl --features="cli"
+```
+
+See [docs.rs](https://docs.rs/booru-dl#feature-flags) for more features. For example, use [`rustls`](https://github.com/rustls/rustls) instead of `openssl`:
+
+```bash
+cargo install booru-dl --no-default-features --features="cli, rustls-tls"
 ```
 
 ## Usage
