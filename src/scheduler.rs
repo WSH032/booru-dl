@@ -137,7 +137,7 @@ impl Scheduler {
             })
     }
 
-    /// Return the formated download status message
+    /// Return the formatted download status message
     #[inline]
     fn pb_msg(status: &DownloadStatus) -> String {
         let DownloadStatus {
@@ -148,7 +148,7 @@ impl Scheduler {
         format!("[done:{done}\texisted:{existed}\tfailed:{failed}]")
     }
 
-    /// Return the formated speed status message in bytes
+    /// Return the formatted speed status message in bytes
     #[inline]
     fn pb_prefix(speed: u64) -> String {
         format!("[{}/S]", indicatif::HumanBytes(speed))
@@ -322,7 +322,7 @@ impl Scheduler {
     }
 
     /// Launch the scheduler and download all images from api data to the download directory.
-    /// A process bar will be displayed to show the download status adn speed.
+    /// A process bar will be displayed to show the download status and speed.
     ///
     /// # Panics
     ///

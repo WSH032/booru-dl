@@ -101,7 +101,7 @@ where
 
             while let Some(mut chunk) = response.chunk().await? {
                 let chunk_len: usize = chunk.len();
-                // may be we should check if occurr `FileAllocationFailed` error
+                // may be we should check if occur `FileAllocationFailed` error
                 file_buf.write_all_buf(&mut chunk).await?;
 
                 if let Some(ref data_cursor) = data_cursor {
