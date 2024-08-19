@@ -31,7 +31,8 @@ const EDITOR_EXTENSION: &str = ".toml";
 /// ```
 #[non_exhaustive]
 #[derive(Parser)]
-#[command(version, about)]
+// NOTE: `long_about=None` is important, or the docstring will be treated as the long about.
+#[command(version, about, long_about=None)]
 pub struct Cli {
     /// The config file to use.
     ///
@@ -39,6 +40,13 @@ pub struct Cli {
     /// to open an editor to ask the user to write a temp config file.
     #[arg(value_name = "PATH")]
     #[arg(value_parser = PathBufValueParser::new().try_map(Self::parse_config_from_filepath))]
+    // NOTE: `help=...` is important, or the docstring will be treated as the help.
+    #[arg(
+        help = "The config file to use",
+        long_help = "The config file to use.
+If `None`, will automatically open an editor to create one temporarily.
+If the editor open failed, will return an error."
+    )]
     pub config: Option<Config>,
 }
 
