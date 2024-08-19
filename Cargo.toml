@@ -102,6 +102,11 @@ path = "src/main.rs"
 required-features = ["cli"]
 
 
+[package.metadata.docs.rs]
+# See: https://docs.rs/about/metadata
+all-features = true
+
+
 [lints.rust]
 # # https://github.com/rust-lang/rust-clippy/issues/5196
 # warnings = "deny"
