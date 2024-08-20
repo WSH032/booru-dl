@@ -17,6 +17,13 @@ Currently, we only support downloads from [Gelbooru](https://gelbooru.com/).
 
 This is the Rust rewrite of [Gelbooru-API-Downloader](https://github.com/WSH032/Gelbooru-API-Downloader). If you need the Python version, you can refer to it.
 
+## Demo
+
+<!-- how to upload images:  https://docs.github.com/get-started/writing-on-github/working-with-advanced-formatting/attaching-files -->
+![booru-dl-cli-demo](https://github.com/user-attachments/assets/25883a4d-13c3-4ba9-b3b3-90edde2eeea0)
+
+*The GIF 👆 created by [ShareX](https://github.com/ShareX/ShareX)*
+
 ## Credit
 
 > [!WARNING]
